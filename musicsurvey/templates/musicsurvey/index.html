@@ -1,0 +1,92 @@
+{% load static %}
+{% load tags %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Music evaluation survey</title>
+    <meta charset="utf-8">
+    <link rel = "stylesheet"
+          type = "text/css"
+          href="{% static 'musicsurvey/style.css' %}"
+          />
+    <script type = "text/javascript">
+      window.onload = function() {
+          window.survey_start = new Date();
+      };
+      function survey_submit() {
+          var form = document.forms["survey"];
+          for (var i = 0; i < {{ pairs|length }}; i++) {
+              var input_name = "sel" + i;
+              var value = form.elements[input_name].value;
+              if (!value) {
+                  alert("Please answer question " + (i + 1) + ".");
+                  return false;
+              }
+          }
+          var elapsed_s = (new Date() - window.survey_start) / 1000.0;
+          var input = document.createElement('input');
+          input.setAttribute('name', 'elapsed_s');
+          input.setAttribute('value', elapsed_s);
+          input.setAttribute('type', 'hidden');
+          form.appendChild(input);
+          return true;
+      }
+      function mute_others(el) {
+          var others = document.querySelectorAll("audio");
+          [].forEach.call(others, function(oth) {
+              if (oth != el) {
+                  oth.pause();
+              }
+          });
+      }
+    </script>
+  </head>
+  <body>
+    <form class="container"
+          method="POST"
+          action="{% url 'submit' %}"
+          id="survey"
+          onsubmit="return survey_submit()">
+      {% csrf_token %}
+      <h1>Music evaluation survey</h1>
+      <p>Please listen to the pairs of clips below. The two clips in
+        every pair starts the same but continues differently,
+        depending on how it was generated. For each pair, select the
+        one you prefer or think sounds better.</p>
+      {% for p0, p1 in pairs %}
+      <h2>[{{ forloop.counter }}/{{ pairs|length }}] Which clip do you prefer?</h2>
+      <ul class="two-choice">
+        <li>
+          <input type="radio"
+                 id="sel{{ forloop.counter0 }}-top"
+                 value="{{ p0.name }}-{{ p1.name }}"
+                 name="sel{{ forloop.counter0 }}">
+          <label for="sel{{ forloop.counter0 }}-top">
+            <audio controls
+                   onplay="mute_others(this)"
+                   src="{{ p0.name | mp3path }}">
+              Your browser does not support the
+              <code>audio</code> element.</audio>
+          </label>
+          <div class="check"></div>
+        </li>
+        <li>
+          <input type="radio"
+                 id="sel{{ forloop.counter0 }}-bottom"
+                 value="{{ p1.name }}-{{ p0.name }}"
+                 name="sel{{ forloop.counter0 }}">
+          <label for="sel{{ forloop.counter0 }}-bottom">
+            <audio controls
+                   onplay="mute_others(this)"
+                   src="{{ p1.name | mp3path }}">
+              Your browser does not support the
+              <code>audio</code> element.</audio>
+          </label>
+          <div class="check"></div>
+        </li>
+      </ul>
+      {% endfor %}
+      <input type = "submit" value = "Submit answers"/>
+    </form>
+  </body>
+</html>

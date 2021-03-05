@@ -1,0 +1,52 @@
+{% load static %}
+{% load tags %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Music evaluation survey</title>
+    <meta charset="utf-8">
+    <link rel = "stylesheet"
+          type = "text/css"
+          href="{% static 'musicsurvey/style.css' %}"
+          />
+    <script type = "text/javascript">
+      function mute_others(el) {
+          var others = document.querySelectorAll("audio");
+          [].forEach.call(others, function(oth) {
+              if (oth != el) {
+                  oth.pause();
+              }
+          });
+      }
+    </script>
+  </head>
+  <body>
+    <div class = "container">
+      <h1>Music evaluation survey</h1>
+      <p>Many thanks for your participation! Your preferences were as
+      follows:</p> {% for duel in duels %}
+      <h2>[{{ forloop.counter }}/{{ duels|length }}] Preference</h2>
+      <center>
+      <table>
+        <tr>
+          <td><audio
+                controls
+                onplay="mute_others(this)"
+                src="{{ duel.winner.name | mp3path }}"></audio>
+          </td>
+          <td><p>over</p></td>
+          <td><audio
+                controls
+                onplay="mute_others(this)"
+                src="{{ duel.loser.name | mp3path }}"></audio>
+          </td>
+        </tr>
+      </table>
+      </center>
+      <p>You preferred the clip {{ duel.winner.gen_type|humanize_model }} over the clip
+        {{ duel.loser.gen_type|humanize_model }}.</p>
+      {% endfor %}
+      <p><a href="{% url 'index' %}">Try again!</a></p>
+    </div>
+  </body>
+</html>
