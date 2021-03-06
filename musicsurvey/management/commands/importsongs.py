@@ -5,7 +5,7 @@ from musicsurvey.settings import MUSICSURVEY_CLIP_ROOT
 from pathlib import Path
 from shutil import copy
 
-def ensure_clip(stdout, src, serve_dir):
+def ensure_clip(stdout, src, clips_dir):
     parts = src.stem.split('-')
     offset = int(parts[0])
     gen_type = '%s-%s' % (parts[1], parts[2])
@@ -14,7 +14,7 @@ def ensure_clip(stdout, src, serve_dir):
     name = random_name()
     clip = Clip(name = name, offset = offset, gen_type = gen_type)
     clip.save()
-    dst = serve_dir / ('%s.mp3' % name)
+    dst = clips_dir / ('%s.mp3' % name)
     copy(str(src), str(dst))
     stdout.write('Importing %s as %s.' % (src.stem, dst.stem))
 
@@ -29,12 +29,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **opts):
         import_dir = Path(opts['import-dir'])
-        serve_dir = Path(MUSICSURVEY_CLIP_ROOT)
-        serve_dir.mkdir(exist_ok = True)
 
+        clips_dir = STATIC_ROOT / 'musicsurvey' / 'clips'
+        clips_dir.mkdir(exist_ok = True)
         if opts['delete_existing']:
             Clip.objects.all().delete()
             Round.objects.all().delete()
 
         for song in import_dir.glob('*.mp3'):
-            ensure_clip(self.stdout, song, serve_dir)
+            ensure_clip(self.stdout, song, clips_dir)
