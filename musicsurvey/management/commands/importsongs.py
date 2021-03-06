@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from musicsurvey import random_name
 from musicsurvey.models import *
-from musicsurvey.settings import MUSICSURVEY_CLIP_ROOT
 from pathlib import Path
 from shutil import copy
 
