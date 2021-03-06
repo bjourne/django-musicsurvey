@@ -3,10 +3,9 @@ from datetime import datetime
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
-from musicsurvey import random_name
+from musicsurvey import random_name, settings
 from musicsurvey.models import Clip, Duel, Round
-from musicsurvey.settings import MUSICSURVEY_CLIPS_PER_SURVEY
-from random import sample, randint
+from random import choice, sample, shuffle, randint
 
 def thanks(request, round_name):
     round = get_object_or_404(Round, name = round_name)
@@ -28,15 +27,40 @@ def submit(request):
         duel.save()
     return HttpResponseRedirect(reverse('thanks', args=[round.name]))
 
+# Not awesome code, but it ensure that no offset repeats and that the
+# number of random clips is limited.
 def index(request):
+
+    # Clips grouped by offsets in random order.
     clips_per_offset = defaultdict(list)
     for clip in Clip.objects.all():
         clips_per_offset[clip.offset].append(clip)
-    offsets = sample(list(clips_per_offset.keys()),
-                     MUSICSURVEY_CLIPS_PER_SURVEY)
-    pairs = []
-    for offset in offsets:
-        pair = sample(clips_per_offset[offset], 2)
-        pairs.append(pair)
+    clips_per_offset = list(clips_per_offset.items())
+    for offset, clips in clips_per_offset:
+        shuffle(clips)
+    shuffle(clips_per_offset)
+
+    n_total_pairs = settings.MUSICSURVEY_PAIRS_PER_SURVEY
+    n_random_pairs = settings.MUSICSURVEY_RANDOM_PAIRS_PER_SURVEY
+    n_non_random_pairs = n_total_pairs - n_random_pairs
+    random_pairs = []
+    non_random_pairs = []
+    for offset, clips in clips_per_offset:
+        random_clips = [c for c in clips if 'random' in c.gen_type]
+        non_random_clips = [c for c in clips if not 'random' in c.gen_type]
+        if (random_clips
+            and non_random_clips
+            and len(random_pairs) < n_random_pairs):
+            random_pairs.append([random_clips[0], non_random_clips[0]])
+        elif (len(non_random_clips) > 1
+              and len(non_random_pairs) < n_non_random_pairs):
+            non_random_pairs.append(sample(non_random_clips, 2))
+    pairs = random_pairs + non_random_pairs
+    assert len(pairs) == n_total_pairs
+    assert len(random_pairs) == n_random_pairs
+    assert len(non_random_pairs) == n_non_random_pairs
+    shuffle(pairs)
+    for pair in pairs:
+        shuffle(pair)
     context = {'pairs' : pairs}
     return render(request, 'musicsurvey/index.html', context)
