@@ -37,6 +37,7 @@ input[type=submit]:active {
 label > audio {
     display: block;
     margin-top: -7px;
+    width: 500px;
 }
 
 .two-choice li:hover label, input[type=submit]:hover {
