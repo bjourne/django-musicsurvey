@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from musicsurvey import random_name
 from musicsurvey.models import Clip, Duel, Round
@@ -9,7 +9,8 @@ from musicsurvey.settings import MUSICSURVEY_CLIPS_PER_SURVEY
 from random import sample, randint
 
 def thanks(request, round_name):
-    duels = Round.objects.get(name = round_name).duel_set.all()
+    round = get_object_or_404(Round, name = round_name)
+    duels = round.duel_set.all()
     context = {'duels' : duels}
     return render(request, 'musicsurvey/thanks.html', context)
 

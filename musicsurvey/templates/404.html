@@ -1,0 +1,19 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Music evaluation survey</title>
+    <meta charset="utf-8">
+    <link rel = "stylesheet"
+          type = "text/css"
+          href="{% static 'musicsurvey/style.css' %}"
+          />
+  </head>
+  <body>
+    <div class = "container">
+      <h1>404 Page not found</h1>
+      <p>The page you were looking for does not exist.</p>
+      <p><a href="{% url 'index' %}">Take the music survey!</a></p>
+    </div>
+  </body>
+</html>
