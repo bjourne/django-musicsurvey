@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from musicsurvey import random_name
 from musicsurvey.models import *
@@ -29,8 +30,8 @@ class Command(BaseCommand):
     def handle(self, *args, **opts):
         import_dir = Path(opts['import-dir'])
 
-        clips_dir = STATIC_ROOT / 'musicsurvey' / 'clips'
-        clips_dir.mkdir(exist_ok = True)
+        clips_dir = settings.STATIC_ROOT / 'musicsurvey' / 'clips'
+        clips_dir.mkdir(exist_ok = True, parents = True)
         if opts['delete_existing']:
             Clip.objects.all().delete()
             Round.objects.all().delete()
