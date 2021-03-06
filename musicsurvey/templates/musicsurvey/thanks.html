@@ -43,8 +43,7 @@
         </tr>
       </table>
       </center>
-      <p>You preferred the clip {{ duel.winner.gen_type|humanize_model }} over the clip
-        {{ duel.loser.gen_type|humanize_model }}.</p>
+      <p>You preferred the {{ duel.winner.gen_type|humanize_model }} over the {{ duel.loser.gen_type|humanize_model }}.</p>
       {% endfor %}
       <p><a href="{% url 'index' %}">Try again!</a></p>
     </div>
