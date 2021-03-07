@@ -59,8 +59,8 @@ def index(request):
     assert len(pairs) == n_total_pairs
     assert len(random_pairs) == n_random_pairs
     assert len(non_random_pairs) == n_non_random_pairs
-    shuffle(pairs)
     for pair in pairs:
         shuffle(pair)
+    shuffle(pairs)
     context = {'pairs' : pairs}
     return render(request, 'musicsurvey/index.html', context)

@@ -7,8 +7,8 @@ from shutil import copy
 
 def ensure_clip(stdout, src, clips_dir):
     parts = src.stem.split('-')
-    offset = int(parts[0])
-    gen_type = '%s-%s' % (parts[1], parts[2])
+    offset = '%s-%s' % (parts[0], parts[1])
+    gen_type = '%s-%s' % (parts[2], parts[3])
     if Clip.objects.filter(offset = offset, gen_type = gen_type).exists():
         return
     name = random_name()

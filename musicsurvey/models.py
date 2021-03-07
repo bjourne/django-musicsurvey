@@ -2,7 +2,7 @@ from django.db.models import *
 
 class Clip(Model):
     name = CharField(max_length = 10, unique = True)
-    offset = IntegerField()
+    offset = CharField(max_length = 32)
     gen_type = CharField(max_length = 64)
 
     def __str__(self):
