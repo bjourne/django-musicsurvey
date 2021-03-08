@@ -6,7 +6,7 @@ class Clip(Model):
     gen_type = CharField(max_length = 64)
 
     def __str__(self):
-        return '%s (%d, %s)' % (self.name, self.offset, self.gen_type)
+        return '%s (%s, %s)' % (self.name, self.offset, self.gen_type)
 
     class Meta:
         constraints = [
