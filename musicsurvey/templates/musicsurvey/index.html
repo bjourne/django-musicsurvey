@@ -51,13 +51,12 @@
       <p>This is a project for generating music using machine learning
         models trained on tracker music in MOD format.</p>
       <p>Please help evaluate the strength of the models by listening
-      to the pairs of clips below. The two clips in every pair starts
-      the same but continues differently, depending on how it was
-      generated. For each pair, select the one you prefer or think
-      sounds better. After you have submitted your preferences, what
-      model generated each clip will be revealed.</p>
-      <p>For more information about the project, see <a href =
-      "https://github.com/bjourne/musicgen">https://github.com/bjourne/musicgen</a>.</p>
+        to the pairs of clips below. The clips in the pairs starts the
+        same but continues differently, depending on how the clip was
+        generated. For each pair, select the clip you think sounds
+        better. When you are done press submit answer. The models or
+        humans that composed each clip will be revealed.</p>
+      <p>No personal information about you is collected.</p>
       {% for p0, p1 in pairs %}
       <h2>[{{ forloop.counter }}/{{ pairs|length }}] Which clip do you prefer?</h2>
       <ul class="two-choice">
