@@ -7,8 +7,8 @@ from shutil import copy
 
 def ensure_clip(stdout, src, clips_dir):
     parts = src.stem.split('-')
-    offset = '%s-%s' % (parts[0], parts[1])
-    gen_type = '%s-%s' % (parts[2], parts[3])
+    offset = '-'.join(parts[:4])
+    gen_type = '%s-%s' % (parts[4], parts[5])
     if Clip.objects.filter(offset = offset, gen_type = gen_type).exists():
         return
     name = random_name()
@@ -16,7 +16,7 @@ def ensure_clip(stdout, src, clips_dir):
     clip.save()
     dst = clips_dir / ('%s.mp3' % name)
     copy(str(src), str(dst))
-    stdout.write('Importing %s as %s.' % (src.stem, dst.stem))
+    stdout.write('Importing %30s -> %10s.' % (src.stem, dst.stem))
 
 class Command(BaseCommand):
     help = 'Import clips from a directory'
@@ -35,6 +35,9 @@ class Command(BaseCommand):
         if opts['delete_existing']:
             Clip.objects.all().delete()
             Round.objects.all().delete()
+
+        songs = list(import_dir.glob('*.mp3'))
+        self.stdout.write('%d clips found.' % len(songs))
 
         for song in import_dir.glob('*.mp3'):
             ensure_clip(self.stdout, song, clips_dir)

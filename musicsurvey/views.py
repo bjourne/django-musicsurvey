@@ -40,25 +40,37 @@ def index(request):
         shuffle(clips)
     shuffle(clips_per_offset)
 
+    random_pairs = []
+    human_pairs = []
+    other_pairs = []
+
     n_total_pairs = settings.MUSICSURVEY_PAIRS_PER_SURVEY
     n_random_pairs = settings.MUSICSURVEY_RANDOM_PAIRS_PER_SURVEY
-    n_non_random_pairs = n_total_pairs - n_random_pairs
-    random_pairs = []
-    non_random_pairs = []
+    n_human_pairs = settings.MUSICSURVEY_HUMAN_PAIRS_PER_SURVEY
+
     for offset, clips in clips_per_offset:
         random_clips = [c for c in clips if 'random' in c.gen_type]
-        non_random_clips = [c for c in clips if not 'random' in c.gen_type]
+        human_clips = [c for c in clips if 'original' in c.gen_type]
+        other_clips = [c for c in clips
+                       if (not 'random' in c.gen_type
+                           and not 'original' in c.gen_type)]
         if (random_clips
-            and non_random_clips
+            and other_clips
             and len(random_pairs) < n_random_pairs):
-            random_pairs.append([random_clips[0], non_random_clips[0]])
-        elif (len(non_random_clips) > 1
-              and len(non_random_pairs) < n_non_random_pairs):
-            non_random_pairs.append(sample(non_random_clips, 2))
-    pairs = random_pairs + non_random_pairs
+            random_pairs.append([random_clips[0], other_clips[0]])
+        elif (human_clips
+            and other_clips
+            and len(human_pairs) < n_human_pairs):
+            human_pairs.append([human_clips[0], other_clips[0]])
+        elif len(other_clips) >= 2:
+            other_pairs.append([other_clips[0], other_clips[1]])
+        if (len(random_pairs) + len(human_pairs) + len(other_pairs)
+            == n_total_pairs):
+            break
+    pairs = random_pairs + human_pairs + other_pairs
     assert len(pairs) == n_total_pairs
     assert len(random_pairs) == n_random_pairs
-    assert len(non_random_pairs) == n_non_random_pairs
+    assert len(human_pairs) == n_human_pairs
     for pair in pairs:
         shuffle(pair)
     shuffle(pairs)
