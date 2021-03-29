@@ -11,4 +11,4 @@ MUSICSURVEY_RANDOM_PAIRS_PER_SURVEY = \
 
 # Number of pairs per survey that contains a human-composed clip.
 MUSICSURVEY_HUMAN_PAIRS_PER_SURVEY = \
-    getattr(settings, 'MUSICSURVEY_HUMAN_PAIRS_PER_SURVEY', 5)
+    getattr(settings, 'MUSICSURVEY_HUMAN_PAIRS_PER_SURVEY', 4)
