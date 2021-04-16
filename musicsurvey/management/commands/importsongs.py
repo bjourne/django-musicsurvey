@@ -8,12 +8,18 @@ from shutil import copy, rmtree
 
 def ensure_clip(stdout, src, clips_dir):
     parts = src.stem.split('__')
-    offset = parts[0]
-    gen_type = parts[1]
-    if Clip.objects.filter(offset = offset, gen_type = gen_type).exists():
+    composition = parts[0]
+    composer = parts[1]
+    misc = parts[2]
+    if Clip.objects.filter(composition = composition,
+                           composer = composer,
+                           misc = misc).exists():
         return
     name = random_name()
-    clip = Clip(name = name, offset = offset, gen_type = gen_type)
+    clip = Clip(random_name = name,
+                composition = composition,
+                composer = composer,
+                misc = misc)
     clip.save()
     dst = clips_dir / ('%s.%s' % (name, ms_settings.MUSICSURVEY_FILE_TYPE))
     copy(str(src), str(dst))

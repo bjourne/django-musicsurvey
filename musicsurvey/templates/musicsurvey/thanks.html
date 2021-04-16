@@ -49,7 +49,7 @@
         </tr>
       </table>
       </center>
-      <p>You preferred the {{ duel.winner.gen_type|humanize_model }} over the {{ duel.loser.gen_type|humanize_model }}.</p>
+      <p>You preferred the {{ duel.winner.composer|humanize_model }} over the {{ duel.loser.composer|humanize_model }}.</p>
       {% endfor %}
       <p><a href="{% url 'index' %}">Try again!</a></p>
     </div>

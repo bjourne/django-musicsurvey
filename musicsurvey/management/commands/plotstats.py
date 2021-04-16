@@ -44,11 +44,15 @@ def plot_overall_win_ratios(rows, names, png_name):
 def plot_win_ratios_per_opponent(rows, names, png_name):
     n_names = len(names)
     fig, ax = plt.subplots(figsize = (12, 4))
+
+    # Last row is overall and the first column which contains headers.
     wins = [[] for _ in names]
-    for row in rows[:-1]:
-        for i, col in enumerate(row[1:]):
-            if col != 0:
-                wins[i].append(col)
+    for y, row in enumerate(rows[:-1]):
+        for x, col in enumerate(row[1:]):
+            if x != y:
+                # If the combatants haven't meet, set the win ratio to
+                # 0.
+                wins[x].append(col if col != 'n/a' else 0.0)
 
     assert n_names == 4
     colors = [
@@ -72,7 +76,7 @@ def plot_win_ratios_per_opponent(rows, names, png_name):
     ax.set_xticklabels(names)
     handles = [Patch(color = 'C%d' % i, label = name)
                for i, name in enumerate(names)]
-    ax.legend(handles = handles)
+    ax.legend(handles = handles, loc = 'upper right')
     for spine in ["top", "right"]:
         ax.spines[spine].set_visible(False)
     plt.savefig(png_name)
@@ -90,7 +94,7 @@ class Command(BaseCommand):
         all_duels = []
         for round in Round.objects.all():
             duels = round.duel_set.all()
-            duels = [(d.winner.gen_type, d.loser.gen_type) for d in duels]
+            duels = [(d.winner.composer, d.loser.composer) for d in duels]
             n_duels = len(duels)
             args = (round.ip, n_duels, round.elapsed_s)
             stdout.write(fmt % args)
@@ -117,7 +121,7 @@ class Command(BaseCommand):
             for gen2 in gen_names:
                 n_battles = battles[gen2][gen1]
                 n_wins = wins[gen2][gen1]
-                row.append(0 if not n_battles else n_wins / n_battles)
+                row.append('n/a' if not n_battles else n_wins / n_battles)
             rows.append(row)
 
         # Add overall
@@ -131,8 +135,6 @@ class Command(BaseCommand):
         def cell_fmt(x):
             if isinstance(x, str):
                 return x
-            elif x == 0:
-                return 'n/a'
             return '%.2f' % x
 
         names = list(gen_names.values())

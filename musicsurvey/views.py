@@ -22,24 +22,23 @@ def submit(request):
     round = Round(ip = ip, elapsed_s = elapsed_s, name = random_name())
     round.save()
     for winner, loser in pairs:
-        winner = Clip.objects.get(name = winner)
-        loser = Clip.objects.get(name = loser)
+        winner = Clip.objects.get(random_name = winner)
+        loser = Clip.objects.get(random_name = loser)
         duel = Duel(winner = winner, loser = loser, round = round)
         duel.save()
     return HttpResponseRedirect(reverse('thanks', args=[round.name]))
 
-# Not awesome code, but it ensure that no offset repeats and that the
-# number of random clips is limited.
+# Not awesome code, but it ensure that no composition repeats and that
+# the number of random clips is limited.
 def index(request):
-
-    # Clips grouped by offsets in random order.
-    clips_per_offset = defaultdict(list)
+    # Group clips by composition.
+    clips_per_composition = defaultdict(list)
     for clip in Clip.objects.all():
-        clips_per_offset[clip.offset].append(clip)
-    clips_per_offset = list(clips_per_offset.items())
-    for offset, clips in clips_per_offset:
+        clips_per_composition[clip.composition].append(clip)
+    clips_per_composition = list(clips_per_composition.items())
+    for composition, clips in clips_per_composition:
         shuffle(clips)
-    shuffle(clips_per_offset)
+    shuffle(clips_per_composition)
 
     random_pairs = []
     human_pairs = []
@@ -49,19 +48,19 @@ def index(request):
     n_random_pairs = settings.MUSICSURVEY_RANDOM_PAIRS_PER_SURVEY
     n_human_pairs = settings.MUSICSURVEY_HUMAN_PAIRS_PER_SURVEY
 
-    n_offsets = len(clips_per_offset)
-    if n_offsets < n_total_pairs:
-        err = ('Only %d clips offsets found, %d required. Use the '
+    n_compositions = len(clips_per_composition)
+    if n_compositions < n_total_pairs:
+        err = ('Only %d compositions found, %d required. Use the '
                '"importsongs" command to import a clip collection.'
-               % (n_offsets, n_total_pairs))
+               % (n_compositions, n_total_pairs))
         raise ImproperlyConfigured(err)
 
-    for offset, clips in clips_per_offset:
-        random_clips = [c for c in clips if 'random' in c.gen_type]
-        human_clips = [c for c in clips if 'original' in c.gen_type]
+    for composition, clips in clips_per_composition:
+        random_clips = [c for c in clips if 'random' in c.composer]
+        human_clips = [c for c in clips if 'original' in c.composer]
         other_clips = [c for c in clips
-                       if (not 'random' in c.gen_type
-                           and not 'original' in c.gen_type)]
+                       if (not 'random' in c.composer
+                           and not 'original' in c.composer)]
         if (random_clips
             and other_clips
             and len(random_pairs) < n_random_pairs):

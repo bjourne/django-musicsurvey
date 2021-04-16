@@ -17,5 +17,5 @@ def humanize_model(s):
 @register.filter(name = 'clips_static_url')
 def clips_static_url(clip):
     fmt = '%smusicsurvey/%s.%s'
-    return fmt % (settings.STATIC_URL, clip.name,
+    return fmt % (settings.STATIC_URL, clip.random_name,
                   settings.MUSICSURVEY_FILE_TYPE)

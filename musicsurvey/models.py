@@ -1,17 +1,22 @@
 from django.db.models import *
 
 class Clip(Model):
-    name = CharField(max_length = 10, unique = True)
-    offset = CharField(max_length = 32)
-    gen_type = CharField(max_length = 64)
+    random_name = CharField(max_length = 10, unique = True)
+    composition = CharField(max_length = 32)
+    composer = CharField(max_length = 64)
+    misc = CharField(max_length = 32)
 
     def __str__(self):
-        return '%s (%s, %s)' % (self.name, self.offset, self.gen_type)
+        return '%s (%s, %s, %s)' % (self.random_name,
+                                    self.composition,
+                                    self.composer,
+                                    self.misc)
 
     class Meta:
         constraints = [
-            UniqueConstraint(fields = ['offset', 'gen_type'],
-                             name = 'uq_clip')
+            UniqueConstraint(
+                fields = ['composition', 'composer', 'misc'],
+                name = 'uq_clip')
         ]
 
 class Round(Model):

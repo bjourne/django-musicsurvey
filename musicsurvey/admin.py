@@ -4,7 +4,7 @@ from django.contrib.admin import ModelAdmin
 from .models import *
 
 class ClipAdmin(ModelAdmin):
-    list_display = 'name', 'offset', 'gen_type'
+    list_display = 'random_name', 'composer', 'composition', 'misc'
 
 class DuelAdmin(ModelAdmin):
     list_display = 'winner', 'loser', 'round'
