@@ -32,13 +32,13 @@
           <td><audio
                 controls
                 onplay="mute_others(this)"
-                src="{% get_static_prefix %}musicsurvey/clips/{{ duel.winner.name }}.mp3"></audio>
+                src="{% get_static_prefix %}musicsurvey/{{ duel.winner.name }}.mp3"></audio>
           </td>
           <td><p>over</p></td>
           <td><audio
                 controls
                 onplay="mute_others(this)"
-                src="{% get_static_prefix %}musicsurvey/clips/{{ duel.loser.name }}.mp3"></audio>
+                src="{% get_static_prefix %}musicsurvey/{{ duel.loser.name }}.mp3"></audio>
           </td>
         </tr>
       </table>

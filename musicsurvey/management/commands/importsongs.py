@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand, CommandError
 from musicsurvey import random_name
 from musicsurvey.models import *
 from pathlib import Path
-from shutil import copy
+from shutil import copy, rmtree
 
 def ensure_clip(stdout, src, clips_dir):
     parts = src.stem.split('-')
@@ -30,14 +30,19 @@ class Command(BaseCommand):
     def handle(self, *args, **opts):
         import_dir = Path(opts['import-dir'])
 
-        clips_dir = settings.STATIC_ROOT / 'musicsurvey' / 'clips'
-        clips_dir.mkdir(exist_ok = True, parents = True)
+        clips_dir = [path for (prefix, path) in settings.STATICFILES_DIRS
+                     if prefix == 'musicsurvey']
+        if not clips_dir:
+            err = ('STATICFILES_DIRS must contains a directory '
+                   'for storing clips.')
+            raise ValueError(err)
+        clips_dir = clips_dir[0]
         if opts['delete_existing']:
             Clip.objects.all().delete()
             Round.objects.all().delete()
-
+            rmtree(clips_dir)
+        clips_dir.mkdir(exist_ok = True, parents = True)
         songs = list(import_dir.glob('*.mp3'))
         self.stdout.write('%d clips found.' % len(songs))
-
         for song in import_dir.glob('*.mp3'):
             ensure_clip(self.stdout, song, clips_dir)
