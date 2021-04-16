@@ -7,9 +7,9 @@ from pathlib import Path
 from shutil import copy, rmtree
 
 def ensure_clip(stdout, src, clips_dir):
-    parts = src.stem.split('-')
-    offset = '-'.join(parts[:4])
-    gen_type = '%s-%s' % (parts[4], parts[5])
+    parts = src.stem.split('__')
+    offset = parts[0]
+    gen_type = parts[1]
     if Clip.objects.filter(offset = offset, gen_type = gen_type).exists():
         return
     name = random_name()
