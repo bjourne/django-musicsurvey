@@ -1,6 +1,7 @@
-from django.conf import settings
+from django.conf import settings as dj_settings
 from django.core.management.base import BaseCommand, CommandError
 from musicsurvey import random_name
+from musicsurvey import settings as ms_settings
 from musicsurvey.models import *
 from pathlib import Path
 from shutil import copy, rmtree
@@ -14,7 +15,7 @@ def ensure_clip(stdout, src, clips_dir):
     name = random_name()
     clip = Clip(name = name, offset = offset, gen_type = gen_type)
     clip.save()
-    dst = clips_dir / ('%s.mp3' % name)
+    dst = clips_dir / ('%s.%s' % (name, ms_settings.MUSICSURVEY_FILE_TYPE))
     copy(str(src), str(dst))
     stdout.write('Importing %30s -> %10s.' % (src.stem, dst.stem))
 
@@ -30,7 +31,7 @@ class Command(BaseCommand):
     def handle(self, *args, **opts):
         import_dir = Path(opts['import-dir'])
 
-        clips_dir = [path for (prefix, path) in settings.STATICFILES_DIRS
+        clips_dir = [p for (prefix, p) in dj_settings.STATICFILES_DIRS
                      if prefix == 'musicsurvey']
         if not clips_dir:
             err = ('STATICFILES_DIRS must contains a directory '
@@ -42,7 +43,8 @@ class Command(BaseCommand):
             Round.objects.all().delete()
             rmtree(clips_dir)
         clips_dir.mkdir(exist_ok = True, parents = True)
-        songs = list(import_dir.glob('*.mp3'))
+        glob = '*.%s' % ms_settings.MUSICSURVEY_FILE_TYPE
+        songs = list(import_dir.glob(glob))
         self.stdout.write('%d clips found.' % len(songs))
-        for song in import_dir.glob('*.mp3'):
+        for song in songs:
             ensure_clip(self.stdout, song, clips_dir)

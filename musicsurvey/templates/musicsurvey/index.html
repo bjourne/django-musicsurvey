@@ -1,4 +1,5 @@
 {% load static %}
+{% load tags %}
 <!DOCTYPE html>
 <html>
   <head>
@@ -72,7 +73,7 @@
           <label for="sel{{ forloop.counter0 }}-top">
             <audio controls
                    onplay="mute_others(this)"
-                   src="{% get_static_prefix %}musicsurvey/{{ p0.name}}.mp3">
+                   src="{{ p0 | clips_static_url }}">
               Your browser does not support the
               <code>audio</code> element.</audio>
           </label>
@@ -86,7 +87,7 @@
           <label for="sel{{ forloop.counter0 }}-bottom">
             <audio controls
                    onplay="mute_others(this)"
-                   src="{% get_static_prefix %}musicsurvey/{{ p1.name}}.mp3">
+                   src="{{ p1 | clips_static_url }}">
               Your browser does not support the
               <code>audio</code> element.</audio>
           </label>

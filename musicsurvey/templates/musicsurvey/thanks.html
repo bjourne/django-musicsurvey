@@ -32,13 +32,19 @@
           <td><audio
                 controls
                 onplay="mute_others(this)"
-                src="{% get_static_prefix %}musicsurvey/{{ duel.winner.name }}.mp3"></audio>
+                src="{{ duel.winner | clips_static_url }}">
+              Your browser does not support the
+              <code>audio</code> element.
+              </audio>
           </td>
           <td><p>over</p></td>
           <td><audio
                 controls
                 onplay="mute_others(this)"
-                src="{% get_static_prefix %}musicsurvey/{{ duel.loser.name }}.mp3"></audio>
+                src="{{ duel.loser | clips_static_url }}">
+              Your browser does not support the
+              <code>audio</code> element.
+              </audio>
           </td>
         </tr>
       </table>
