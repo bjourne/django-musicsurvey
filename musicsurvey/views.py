@@ -30,8 +30,7 @@ def submit(request):
 
 # Not awesome code, but it ensure that no composition repeats and that
 # the number of random clips is limited.
-def index(request):
-    # Group clips by composition.
+def sample_pairs_same_compositions():
     clips_per_composition = defaultdict(list)
     for clip in Clip.objects.all():
         clips_per_composition[clip.composition].append(clip)
@@ -50,7 +49,7 @@ def index(request):
 
     n_compositions = len(clips_per_composition)
     if n_compositions < n_total_pairs:
-        err = ('Only %d compositions found, %d required. Use the '
+        err = ('Only %d compositions found, %d is required. Use the '
                '"importsongs" command to import a clip collection.'
                % (n_compositions, n_total_pairs))
         raise ImproperlyConfigured(err)
@@ -78,6 +77,53 @@ def index(request):
     assert len(pairs) == n_total_pairs
     assert len(random_pairs) == n_random_pairs
     assert len(human_pairs) == n_human_pairs
+    return pairs
+
+def sample_pairs():
+    clips = list(Clip.objects.all())
+
+    random_clips = [c for c in clips if 'random' in c.composer]
+    human_clips = [c for c in clips if 'original' in c.composer]
+    other_clips = [c for c in clips
+                   if (not 'random' in c.composer
+                       and not 'original' in c.composer)]
+
+    n_human_pairs = settings.MUSICSURVEY_HUMAN_PAIRS_PER_SURVEY
+    n_random_pairs = settings.MUSICSURVEY_RANDOM_PAIRS_PER_SURVEY
+    n_other_pairs = settings.MUSICSURVEY_PAIRS_PER_SURVEY \
+        - n_human_pairs - n_random_pairs
+
+    pairs = []
+    for _ in range(n_human_pairs):
+        clip1 = choice(human_clips)
+        human_clips.remove(clip1)
+        clip2 = choice(other_clips)
+        other_clips.remove(clip2)
+        pairs.append([clip1, clip2])
+    for _ in range(n_random_pairs):
+        clip1 = choice(random_clips)
+        random_clips.remove(clip1)
+        clip2 = choice(other_clips)
+        other_clips.remove(clip2)
+        pairs.append([clip1, clip2])
+    for _ in range(n_other_pairs):
+        clip1 = choice(other_clips)
+        other_clips.remove(clip1)
+        while True:
+            clip2 = choice(other_clips)
+            if clip2.composer != clip1.composer:
+                other_clips.remove(clip2)
+                break
+        pairs.append([clip1, clip2])
+
+    assert len(pairs) == n_human_pairs + n_random_pairs + n_other_pairs
+    return pairs
+
+def index(request):
+    if settings.MUSICSURVEY_SAME_COMPOSITIONS:
+        pairs = sample_pairs_same_compositions()
+    else:
+        pairs = sample_pairs()
     for pair in pairs:
         shuffle(pair)
     shuffle(pairs)
