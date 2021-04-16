@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 from django.http import HttpResponse, HttpResponseRedirect
+from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from musicsurvey import random_name, settings
@@ -47,6 +48,13 @@ def index(request):
     n_total_pairs = settings.MUSICSURVEY_PAIRS_PER_SURVEY
     n_random_pairs = settings.MUSICSURVEY_RANDOM_PAIRS_PER_SURVEY
     n_human_pairs = settings.MUSICSURVEY_HUMAN_PAIRS_PER_SURVEY
+
+    n_offsets = len(clips_per_offset)
+    if n_offsets < n_total_pairs:
+        err = ('Only %d clips offsets found, %d required. Use the '
+               '"importsongs" command to import a clip collection.'
+               % (n_offsets, n_total_pairs))
+        raise ImproperlyConfigured(err)
 
     for offset, clips in clips_per_offset:
         random_clips = [c for c in clips if 'random' in c.gen_type]
