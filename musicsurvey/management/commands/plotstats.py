@@ -1,4 +1,5 @@
 from collections import defaultdict
+from django.conf import settings as settings
 from django.core.management.base import BaseCommand, CommandError
 from matplotlib.patches import Patch
 from musicsurvey.models import *
@@ -101,24 +102,31 @@ class Command(BaseCommand):
             if any('random' in d[0] for d in duels):
                 stdout.write('Random clip preferred - skipping round.')
                 continue
-            all_duels.extend(duels)
+
+            # Don't count wins over random
+            for winner, loser in duels:
+                assert not 'random' in winner
+                if 'random' in loser:
+                    continue
+                all_duels.append((winner, loser))
+            # all_duels.extend(duels)
 
         for winner, loser in all_duels:
+            print(winner, loser)
             battles[winner][loser] += 1
             battles[loser][winner] += 1
             wins[winner][loser] += 1
 
-        gen_names = {
-            'pcode_abs-original' : 'Human',
-            'pcode_abs-lstm' : 'LSTM (pcode)',
-            'pcode_abs-gpt2' : 'GPT-2 (pcode)',
-            'dcode-gpt2' : 'GPT-2 (dcode)'
+        human_names = {
+            k : v[1] if len(v) == 2 else v
+            for (k, v) in settings.MUSICSURVEY_COMPOSER_NAMES.items()
+            if not 'random' in k
         }
 
         rows = []
-        for gen1 in gen_names:
-            row = [gen_names[gen1]]
-            for gen2 in gen_names:
+        for gen1 in human_names:
+            row = [human_names[gen1]]
+            for gen2 in human_names:
                 n_battles = battles[gen2][gen1]
                 n_wins = wins[gen2][gen1]
                 row.append('n/a' if not n_battles else n_wins / n_battles)
@@ -126,7 +134,7 @@ class Command(BaseCommand):
 
         # Add overall
         row = ['Overall']
-        for winner in gen_names:
+        for winner in human_names:
             n_battles = sum(battles[winner].values())
             n_wins = sum(wins[winner].values())
             row.append(0 if not n_battles else n_wins / n_battles)
@@ -137,7 +145,7 @@ class Command(BaseCommand):
                 return x
             return '%.2f' % x
 
-        names = list(gen_names.values())
+        names = list(human_names.values())
         row_fmt = [cell_fmt] * 5
         header = [''] + names
         print_term_table(row_fmt, rows, header, 'lrrrr')
