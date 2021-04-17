@@ -17,10 +17,13 @@ You can find a demo of django-musicsurvey here,
 https://modmusicgen.com/, where it is used to rate generative music
 models.
 
-## Configuration
+## Installation and configuration
 
-To use django-musicsurvey on your site, add the following to
-`settings.py`:
+To use django-musicsurvey on your site, first install it:
+
+    pip install -U git+https://github.com/bjourne/django-musicsurvey
+
+Then add the following to `settings.py`:
 
 * Add `'musicsurvey.apps.MusicSurveyConfig'` to `INSTALLED_APPS`.
 * Add a path to `STATICFILES_DIRS` for storing user-accesible clips. For
