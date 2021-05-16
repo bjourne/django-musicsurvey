@@ -25,3 +25,9 @@ MUSICSURVEY_COMPOSER_NAMES = \
 # duels. Generally preferable if the number of clips is large.
 MUSICSURVEY_SAME_COMPOSITIONS = \
     getattr(settings, 'MUSICSURVEY_SAME_COMPOSITIONS', True)
+
+# Average number of seconds per pair a survey taker needs to spend per
+# pair for their result to count. Results from survey takers who does
+# not take sufficient time to listen to the clips are excluded.
+MUSICSURVEY_MIN_SECONDS_PER_PAIR = \
+    getattr(settings, 'MUSICSURVEY_MIN_SECONDS_PER_PAIR', 15)

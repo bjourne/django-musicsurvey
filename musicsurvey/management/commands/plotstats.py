@@ -1,7 +1,7 @@
 from collections import defaultdict
-from django.conf import settings as settings
 from django.core.management.base import BaseCommand, CommandError
 from matplotlib.patches import Patch
+from musicsurvey import settings
 from musicsurvey.models import *
 from termtables import to_string
 
@@ -82,9 +82,47 @@ def plot_win_ratios_per_opponent(rows, names, png_name):
         ax.spines[spine].set_visible(False)
     plt.savefig(png_name)
 
+def plot_pair_times(pair_times, png_name):
+    limits = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300]
+    names = ['%d - %d' % (l1, l2) for (l1, l2) in zip(limits, limits[1:])]
+
+    names = ['< %d' % limits[0]] + names + ['> %d' % limits[-1]]
+
+    buckets = [len([p for p in pair_times if l1 < p < l2])
+               for (l1, l2) in zip(limits, limits[1:])]
+    buckets = [len([p for p in pair_times if p < limits[0]])] \
+        + buckets + [len([p for p in pair_times if p > limits[-1]])]
+
+    fig, ax = plt.subplots(figsize = (12, 4))
+    bars = ax.bar(np.arange(len(buckets)), buckets, width = 0.80)
+    ax.set_xticks(range(0, len(buckets)))
+    ax.set_xticklabels(names) #, rotation = 45,
+                       #rotation_mode = 'anchor',
+                       #ha = 'right')
+    ax.set(xlabel = 'time per pair', ylabel = 'count')
+
+
+    # print(buckets)
+
+
+    # pair_times = [round(p/10, 0)*10 for p in pair_times]
+    # fig, ax = plt.subplots(figsize = (12, 4))
+    # n, bins, patches = ax.hist(pair_times, 10, density = True)
+    # ax.set_xlabel('pair time')
+    # ax.set_ylabel('density')
+    plt.savefig(png_name)
 
 class Command(BaseCommand):
     help = 'Plots statistics'
+
+    def add_arguments(self, parser):
+        min_seconds = settings.MUSICSURVEY_MIN_SECONDS_PER_PAIR
+        help = 'Minimum number of seconds per pair [default: %d]' \
+            % min_seconds
+        parser.add_argument(
+            '--min-seconds', type = int,
+            help = help,
+            default = min_seconds)
 
     def handle(self, *args, **opts):
         battles = defaultdict(lambda: defaultdict(int))
@@ -93,14 +131,33 @@ class Command(BaseCommand):
         stdout = self.stdout
         fmt = '%s submitted %d results in %.2f seconds'
         all_duels = []
+        s_min_limit = opts['min_seconds']
+        s_max_limit = 1000
+        pair_times = []
+        all_rounds = list(Round.objects.all())
+
+        stdout.write('Minimum time per clip: %d' % s_min_limit)
+
+        n_prefs = 0
         for round in Round.objects.all():
             duels = round.duel_set.all()
             duels = [(d.winner.composer, d.loser.composer) for d in duels]
             n_duels = len(duels)
+            n_prefs += n_duels
             args = (round.ip, n_duels, round.elapsed_s)
-            stdout.write(fmt % args)
+            # stdout.write(fmt % args)
             if any('random' in d[0] for d in duels):
-                stdout.write('Random clip preferred - skipping round.')
+                stdout.write('Random clip preferred')
+                continue
+
+            s_per_pair = round.elapsed_s / n_duels
+            if s_per_pair < s_min_limit:
+                skip_fmt = '%.2fs/pair < threshold'
+                stdout.write(skip_fmt % s_per_pair)
+                continue
+            if s_per_pair > s_max_limit:
+                skip_fmt = '%.2fs/pair > threshold %.2fs/pair'
+                stdout.write(skip_fmt % (s_per_pair, s_max_limit))
                 continue
 
             # Don't count wins over random
@@ -108,11 +165,13 @@ class Command(BaseCommand):
                 assert not 'random' in winner
                 if 'random' in loser:
                     continue
+                pair_times.append(s_per_pair)
                 all_duels.append((winner, loser))
-            # all_duels.extend(duels)
+
+        stdout.write('%d preferences submitted, generating stats based '
+                     'on %d preferences.' % (n_prefs, len(all_duels)))
 
         for winner, loser in all_duels:
-            print(winner, loser)
             battles[winner][loser] += 1
             battles[loser][winner] += 1
             wins[winner][loser] += 1
@@ -156,3 +215,4 @@ class Command(BaseCommand):
         png_name = 'win-ratios-per-opponent.png'
         stdout.write('Saving image "%s".' % png_name)
         plot_win_ratios_per_opponent(rows, names, png_name)
+        plot_pair_times(pair_times, 'pair-times.png')
