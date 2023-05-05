@@ -23,6 +23,10 @@ To use django-musicsurvey on your site, first install it:
 
     pip install -U git+https://github.com/bjourne/django-musicsurvey
 
+**Do not** install by running `setup.py` directly. If you do that, the
+application will be installed as an egg which will mess up Django's
+template loader.
+
 Then add the following to `settings.py`:
 
 * Add `'musicsurvey.apps.MusicSurveyConfig'` to `INSTALLED_APPS`.
